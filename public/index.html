@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Selov Asx — Share Boost / Temp Mail</title>
+<style>
+:root{
+  --bg:#05060a;
+  --glass:rgba(20,24,34,0.42);
+  --glass2:rgba(28,33,46,0.55);
+  --line:rgba(140,160,200,0.10);
+  --line2:rgba(140,160,200,0.20);
+  --text:#eef2fa;
+  --muted:#8a93a6;
+  --accent:#5eead4;
+  --accent2:#a78bfa;
+  --accent3:#f472b6;
+  --amber:#fbbf24;
+  --danger:#fb7185;
+  --mono:ui-monospace,"JetBrains Mono","Fira Code",Consolas,monospace;
+  --sans:"Inter",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;overflow-x:hidden}
+body{
+  background:var(--bg);
+  color:var(--text);font-family:var(--sans);
+  min-height:100vh;font-size:14px;
+  position:relative;-webkit-font-smoothing:antialiased;
+}
+
+/* === THREE.JS AURORA CANVAS === */
+#bg-canvas{
+  position:fixed;top:0;left:0;
+  width:100vw;height:100vh;
+  z-index:0;pointer-events:none;
+}
+.bg-overlay{
+  position:fixed;inset:0;z-index:1;pointer-events:none;
+  background:
+    radial-gradient(ellipse 90% 60% at 50% -20%, rgba(94,234,212,0.10) 0%, transparent 55%),
+    radial-gradient(ellipse 70% 50% at 90% 110%, rgba(167,139,250,0.10) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 50% at 0% 80%, rgba(244,114,182,0.06) 0%, transparent 55%),
+    linear-gradient(180deg, rgba(5,6,10,0.15) 0%, rgba(5,6,10,0.55) 60%, rgba(5,6,10,0.92) 100%);
+}
+.main-content{position:relative;z-index:10}
+
+/* === TOP BAR === */
+.top{
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding:20px 40px;
+  border-bottom:1px solid var(--line);
+  background:rgba(5,6,10,0.4);
+  backdrop-filter:blur(24px) saturate(180%);
+  -webkit-backdrop-filter:blur(24px) saturate(180%);
+  position:sticky;top:0;z-index:30;
+}
+.brand{
+  display:flex;align-items:center;gap:14px;
+  font-family:var(--mono);font-size:13px;letter-spacing:.32em;
+}
+.brand-mark{
+  width:36px;height:36px;border-radius:11px;
+  background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:800;color:#05060a;font-size:17px;letter-spacing:0;
+  box-shadow:0 8px 28px -8px rgba(94,234,212,0.7);
+  position:relative;
+}
+.brand-mark::after{
+  content:"";position:absolute;inset:0;border-radius:11px;
+  background:linear-gradient(135deg,rgba(255,255,255,0.4) 0%,transparent 50%);
+  pointer-events:none;
+}
+.brand-text{color:var(--text);font-weight:700}
+.brand-text .dot{color:var(--accent)}
+.status{
+  display:flex;align-items:center;gap:9px;
+  font-family:var(--mono);font-size:10px;color:var(--accent);
+  letter-spacing:.18em;text-transform:uppercase;font-weight:600;
+  padding:8px 16px;border-radius:999px;
+  background:rgba(94,234,212,0.08);
+  border:1px solid rgba(94,234,212,0.20);
+}
+.status .pulse{
+  width:6px;height:6px;border-radius:50%;background:var(--accent);
+  box-shadow:0 0 10px var(--accent);animation:pulse 2s infinite;
+}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.85)}}
+
+/* === TABS === */
+.tabs-wrap{max-width:1100px;margin:0 auto;padding:40px 40px 0}
+.tabs{
+  display:inline-flex;gap:4px;padding:5px;
+  background:rgba(20,24,34,0.5);
+  border:1px solid var(--line);
+  border-radius:16px;
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  box-shadow:0 8px 32px -12px rgba(0,0,0,0.6);
+}
+.tab{
+  font-family:var(--mono);font-size:11px;letter-spacing:.14em;
+  padding:12px 22px;border:none;background:transparent;
+  color:var(--muted);cursor:pointer;
+  border-radius:11px;transition:all .3s cubic-bezier(.4,0,.2,1);
+  text-transform:uppercase;font-weight:600;
+  display:flex;align-items:center;gap:9px;
+}
+.tab .n{
+  font-size:9px;padding:2px 7px;border-radius:5px;
+  background:rgba(255,255,255,0.06);color:var(--muted);
+  font-weight:700;
+}
+.tab:hover{color:var(--text)}
+.tab.active{
+  color:#05060a;
+  background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%);
+  box-shadow:0 8px 24px -8px rgba(94,234,212,0.7);
+}
+.tab.active .n{background:rgba(0,0,0,0.2);color:#05060a}
+
+/* === WRAP / PANEL === */
+.wrap{max-width:1100px;margin:0 auto;padding:20px 40px 100px}
+.panel{
+  background:var(--glass);
+  border:1px solid var(--line);
+  border-radius:26px;
+  padding:36px;
+  backdrop-filter:blur(28px) saturate(160%);
+  -webkit-backdrop-filter:blur(28px) saturate(160%);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.06) inset,
+    0 32px 80px -24px rgba(0,0,0,0.7);
+  animation:fadeIn .5s cubic-bezier(.4,0,.2,1);
+}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.panel.hidden{display:none}
+
+.panel-head{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:28px;padding-bottom:24px;
+  border-bottom:1px solid var(--line);
+  flex-wrap:wrap;gap:12px;
+}
+.panel-head h2{
+  font-family:var(--sans);font-size:20px;font-weight:700;
+  margin:0;color:var(--text);letter-spacing:-0.02em;
+  display:flex;align-items:center;gap:14px;
+}
+.panel-head h2 .icon{
+  width:40px;height:40px;border-radius:12px;
+  background:linear-gradient(135deg,rgba(94,234,212,0.15),rgba(167,139,250,0.15));
+  border:1px solid rgba(94,234,212,0.25);
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;
+  box-shadow:0 4px 20px -6px rgba(94,234,212,0.4);
+}
+.panel-head .sub{
+  font-family:var(--mono);font-size:10px;color:var(--muted);
+  letter-spacing:.2em;text-transform:uppercase;font-weight:600;
+  padding:6px 12px;border-radius:6px;
+  background:rgba(255,255,255,0.03);
+  border:1px solid var(--line);
+}
+
+/* === FORM === */
+label{
+  display:block;font-family:var(--mono);font-size:10px;
+  letter-spacing:.18em;color:var(--muted);
+  margin:22px 0 10px;text-transform:uppercase;font-weight:600;
+}
+textarea,input,select{
+  width:100%;
+  background:rgba(5,6,10,0.55);
+  border:1px solid var(--line);
+  border-radius:14px;
+  color:var(--text);
+  font-family:var(--mono);font-size:12.5px;
+  padding:15px 17px;outline:none;
+  transition:all .25s cubic-bezier(.4,0,.2,1);
+}
+textarea:hover,input:hover,select:hover{border-color:var(--line2)}
+textarea:focus,input:focus,select:focus{
+  border-color:var(--accent);
+  box-shadow:0 0 0 4px rgba(94,234,212,0.12);
+  background:rgba(5,6,10,0.8);
+}
+textarea{resize:vertical;min-height:130px;line-height:1.65}
+.row{display:flex;gap:18px;flex-wrap:wrap}
+.row>*{flex:1;min-width:170px}
+
+.check{
+  display:inline-flex;align-items:center;gap:11px;
+  font-family:var(--mono);font-size:11px;color:var(--muted);
+  margin-top:18px;letter-spacing:.04em;cursor:pointer;
+  padding:11px 16px;border-radius:12px;
+  background:rgba(255,255,255,0.02);
+  border:1px solid var(--line);
+  transition:.2s;
+}
+.check:hover{border-color:var(--line2);background:rgba(255,255,255,0.04)}
+.check input{
+  width:17px;height:17px;flex:0 0 auto;
+  accent-color:var(--accent);cursor:pointer;
+}
+.check label{margin:0;text-transform:none;letter-spacing:.02em;
+  font-size:11.5px;cursor:pointer;color:var(--text);font-weight:500}
+
+/* === BUTTONS === */
+.btns{display:flex;gap:12px;margin-top:26px;flex-wrap:wrap}
+button{
+  font-family:var(--mono);font-size:11.5px;letter-spacing:.14em;
+  padding:14px 28px;border-radius:13px;
+  border:1px solid transparent;cursor:pointer;
+  transition:all .25s cubic-bezier(.4,0,.2,1);
+  text-transform:uppercase;font-weight:700;
+}
+.btn-primary{
+  background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%);
+  color:#05060a;
+  box-shadow:0 8px 28px -8px rgba(94,234,212,0.7);
+}
+.btn-primary:hover:not(:disabled){
+  transform:translateY(-2px);
+  box-shadow:0 14px 36px -8px rgba(94,234,212,0.8);
+}
+.btn-primary:disabled{opacity:.35;cursor:not-allowed;box-shadow:none}
+.btn-ghost{
+  background:rgba(255,255,255,0.03);
+  border-color:var(--line2);color:var(--text);
+}
+.btn-ghost:hover{
+  border-color:var(--accent);color:var(--accent);
+  background:rgba(94,234,212,0.08);
+  transform:translateY(-1px);
+}
+.btn-danger{
+  background:rgba(251,113,133,0.08);
+  border-color:rgba(251,113,133,0.35);color:var(--danger);
+}
+.btn-danger:hover:not(:disabled){
+  background:rgba(251,113,133,0.16);
+  border-color:var(--danger);
+  transform:translateY(-1px);
+}
+.btn-danger:disabled{opacity:.3;cursor:not-allowed}
+
+/* === STATS === */
+.stats{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));
+  gap:14px;margin-top:28px;
+}
+.stat{
+  background:rgba(255,255,255,0.025);
+  border:1px solid var(--line);
+  border-radius:16px;padding:18px 20px;
+  position:relative;overflow:hidden;
+  transition:.25s;
+}
+.stat:hover{background:rgba(255,255,255,0.04);border-color:var(--line2)}
+.stat::before{
+  content:"";position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--line2),transparent);
+}
+.stat.ok::before{background:linear-gradient(90deg,transparent,var(--accent),transparent)}
+.stat.fail::before{background:linear-gradient(90deg,transparent,var(--danger),transparent)}
+.stat .k{
+  font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;
+  color:var(--muted);text-transform:uppercase;font-weight:700;
+}
+.stat .v{
+  font-family:var(--mono);font-size:24px;margin-top:8px;
+  color:var(--text);font-weight:700;letter-spacing:-0.02em;
+}
+.stat.ok .v{color:var(--accent)}
+.stat.fail .v{color:var(--danger)}
+
+/* === LOG === */
+.log{
+  background:rgba(0,0,0,0.45);
+  border:1px solid var(--line);
+  border-radius:16px;
+  height:250px;overflow:auto;
+  font-family:var(--mono);font-size:11.5px;
+  line-height:1.8;padding:16px 18px;margin-top:28px;
+  scrollbar-width:thin;scrollbar-color:var(--line2) transparent;
+}
+.log::-webkit-scrollbar{width:6px}
+.log::-webkit-scrollbar-thumb{background:var(--line2);border-radius:3px}
+.log::-webkit-scrollbar-track{background:transparent}
+.log .l{white-space:pre-wrap;word-break:break-all}
+.log .ok{color:var(--accent)}
+.log .err{color:var(--danger)}
+.log .warn{color:var(--amber)}
+.log .dim{color:var(--muted)}
+
+/* === EMAIL BOX === */
+.email-box{
+  display:flex;gap:12px;align-items:stretch;margin-top:10px;
+}
+.email-val{
+  flex:1;
+  background:linear-gradient(135deg,rgba(94,234,212,0.08),rgba(167,139,250,0.08));
+  border:1px dashed rgba(94,234,212,0.4);
+  border-radius:16px;padding:20px 22px;
+  font-family:var(--mono);font-size:17px;letter-spacing:.01em;
+  color:var(--accent);word-break:break-all;
+  display:flex;align-items:center;min-height:64px;
+  font-weight:600;
+}
+.email-val.empty{
+  color:var(--muted);font-size:13px;font-weight:400;
+  border-color:var(--line2);
+  background:rgba(255,255,255,0.02);
+}
+.copy-btn{flex:0 0 auto;padding:0 24px}
+
+/* === MESSAGES === */
+.msg{
+  border:1px solid var(--line);
+  border-radius:16px;margin-top:14px;
+  background:rgba(255,255,255,0.025);
+  overflow:hidden;transition:.25s;
+}
+.msg:hover{border-color:var(--line2);background:rgba(255,255,255,0.04)}
+.msg-h{
+  padding:17px 20px;cursor:pointer;
+  display:flex;gap:18px;
+  align-items:baseline;justify-content:space-between;
+}
+.msg-h:hover{background:rgba(255,255,255,0.02)}
+.msg-sub{font-weight:600;font-size:14px;word-break:break-word;color:var(--text)}
+.msg-from{
+  font-family:var(--mono);font-size:11px;color:var(--muted);
+  margin-top:5px;word-break:break-all;
+}
+.msg-date{
+  font-family:var(--mono);font-size:10px;color:var(--muted);
+  white-space:nowrap;padding:5px 10px;border-radius:7px;
+  background:rgba(255,255,255,0.04);
+  border:1px solid var(--line);
+}
+.msg-body{
+  display:none;padding:16px 20px 20px;
+  font-size:13px;line-height:1.75;color:#b8c2d1;
+  white-space:pre-wrap;word-break:break-word;
+  border-top:1px solid var(--line);
+  background:rgba(0,0,0,0.25);
+}
+.msg.open .msg-body{display:block}
+.empty{
+  font-family:var(--mono);font-size:12px;color:var(--muted);
+  text-align:center;padding:48px 0;letter-spacing:.1em;
+}
+
+/* === TOAST === */
+.toast{
+  position:fixed;bottom:32px;left:50%;
+  transform:translateX(-50%) translateY(28px);
+  background:var(--glass2);
+  backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  border:1px solid var(--accent);
+  color:var(--text);font-family:var(--mono);font-size:12px;
+  padding:14px 24px;border-radius:14px;
+  opacity:0;transition:.35s cubic-bezier(.4,0,.2,1);
+  pointer-events:none;z-index:100;
+  box-shadow:0 16px 48px -12px rgba(94,234,212,0.6);
+  font-weight:600;letter-spacing:.03em;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* === FOOTER === */
+.foot{
+  font-family:var(--mono);font-size:10px;color:var(--muted);
+  text-align:center;padding:48px 0 0;letter-spacing:.22em;
+  text-transform:uppercase;
+}
+.foot b{color:var(--accent);font-weight:700}
+
+@media(max-width:640px){
+  .top{padding:16px 20px}
+  .brand{font-size:11px;letter-spacing:.22em}
+  .brand-mark{width:32px;height:32px;font-size:15px}
+  .tabs-wrap{padding:24px 20px 0}
+  .wrap{padding:16px 20px 60px}
+  .panel{padding:24px;border-radius:20px}
+  .row>*{min-width:100%}
+  .panel-head h2{font-size:17px}
+  .email-val{font-size:14px;padding:16px}
+  .status{font-size:9px;padding:6px 12px}
+}
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+<div class="bg-overlay"></div>
+
+<div class="main-content">
+  <div class="top">
+    <div class="brand">
+      <div class="brand-mark">S</div>
+      <div class="brand-text">SELOV<span class="dot">.</span>ASX</div>
+    </div>
+    <div class="status"><span class="pulse"></span>live</div>
+  </div>
+
+  <div class="tabs-wrap">
+    <div class="tabs">
+      <button class="tab active" data-tab="share"><span class="n">01</span> Share Boost</button>
+      <button class="tab" data-tab="mail"><span class="n">02</span> Temp Mail</button>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <section class="panel" id="tab-share">
+      <div class="panel-head">
+        <h2><span class="icon">⚡</span> Share Boost</h2>
+        <div class="sub">automation</div>
+      </div>
+
+      <label for="appstate">Appstate JSON / Cookie String</label>
+      <textarea id="appstate" spellcheck="false"
+        placeholder='[{"key":"c_user","value":"..."},{"key":"xs","value":"..."}]
+— or —
+c_user=...; xs=...; datr=...'></textarea>
+
+      <div class="check">
+        <input type="checkbox" id="essential">
+        <label for="essential">Essential cookies only (c_user, xs, datr, sb, fr)</label>
+      </div>
+
+      <label for="link">Post Link</label>
+      <input id="link" type="text" spellcheck="false" placeholder="https://facebook.com/...">
+
+      <div class="row">
+        <div><label for="amount">Amount</label>
+          <input id="amount" type="number" min="1" value="100"></div>
+        <div><label for="delay">Delay (ms) — 5000 = 5s</label>
+          <input id="delay" type="number" min="0" value="1000"></div>
+      </div>
+
+      <div class="btns">
+        <button class="btn-primary" id="start">▶ Start</button>
+        <button class="btn-danger" id="stop" disabled>■ Stop</button>
+        <button class="btn-ghost" id="clear">Clear Log</button>
+      </div>
+
+      <div class="stats">
+        <div class="stat ok"><div class="k">Sent</div><div class="v" id="st-ok">0</div></div>
+        <div class="stat fail"><div class="k">Failed</div><div class="v" id="st-fail">0</div></div>
+        <div class="stat"><div class="k">Progress</div><div class="v" id="st-prog">0 / 0</div></div>
+        <div class="stat"><div class="k">Elapsed</div><div class="v" id="st-time">00:00</div></div>
+      </div>
+
+      <div class="log" id="log"></div>
+    </section>
+
+    <section class="panel hidden" id="tab-mail">
+      <div class="panel-head">
+        <h2><span class="icon">✉</span> Temp Mail</h2>
+        <div class="sub">disposable inbox</div>
+      </div>
+
+      <label>Current Address</label>
+      <div class="email-box">
+        <div class="email-val empty" id="email">no address generated</div>
+        <button class="btn-ghost copy-btn" id="copy-email">Copy</button>
+      </div>
+
+      <div class="row">
+        <div><label for="custom">Custom Name (optional)</label>
+          <input id="custom" type="text" spellcheck="false" placeholder="e.g. selov01"></div>
+        <div><label>&nbsp;</label>
+          <button class="btn-primary" id="gen" style="width:100%">Generate</button></div>
+      </div>
+
+      <div class="row">
+        <div><label for="auto">Auto Refresh</label>
+          <select id="auto">
+            <option value="0">off</option>
+            <option value="5000">every 5s</option>
+            <option value="10000">every 10s</option>
+            <option value="30000">every 30s</option>
+          </select>
+        </div>
+        <div><label>&nbsp;</label>
+          <button class="btn-ghost" id="refresh" style="width:100%">Refresh Inbox</button></div>
+      </div>
+
+      <label style="margin-top:28px">Inbox</label>
+      <div id="inbox"><div class="empty">inbox empty</div></div>
+    </section>
+
+    <div class="foot">crafted by <b>SELOV</b> · t.me/cerusaint</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- Three.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+/* ============================================================
+   THREE.JS — AURORA FLOWING BLOBS BACKGROUND
+   Smooth gradient wave blobs, no particles, premium aurora look
+   ============================================================ */
+(function initAurora(){
+  const canvas = document.getElementById('bg-canvas');
+  const renderer = new THREE.WebGLRenderer({canvas, alpha:true, antialias:true});
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+
+  /* fullscreen shader quad — aurora blobs */
+  const geo = new THREE.PlaneGeometry(2, 2);
+
+  const uniforms = {
+    u_time:      { value: 0 },
+    u_resolution:{ value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+    u_mouse:     { value: new THREE.Vector2(0.5, 0.5) }
+  };
+
+  const vert = `
+    varying vec2 vUv;
+    void main(){
+      vUv = uv;
+      gl_Position = vec4(position, 1.0);
+    }
+  `;
+
+  const frag = `
+    precision highp float;
+    varying vec2 vUv;
+    uniform float u_time;
+    uniform vec2 u_resolution;
+    uniform vec2 u_mouse;
+
+    /* smooth noise helpers */
+    float hash(vec2 p){
+      return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453);
+    }
+    float noise(vec2 p){
+      vec2 i = floor(p);
+      vec2 f = fract(p);
+      vec2 u = f*f*(3.0-2.0*f);
+      return mix(mix(hash(i + vec2(0.0,0.0)), hash(i + vec2(1.0,0.0)), u.x),
+                 mix(hash(i + vec2(0.0,1.0)), hash(i + vec2(1.0,1.0)), u.x), u.y);
+    }
+    float fbm(vec2 p){
+      float v = 0.0;
+      float a = 0.5;
+      for(int i = 0; i < 5; i++){
+        v += a * noise(p);
+        p *= 2.0;
+        a *= 0.5;
+      }
+      return v;
+    }
+
+    /* aurora blob field */
+    vec3 aurora(vec2 uv, float t){
+      vec2 p = uv * 2.0 - 1.0;
+      p.x *= u_resolution.x / u_resolution.y;
+
+      /* three moving blobs */
+      vec3 col = vec3(0.0);
+      vec3 c1 = vec3(0.369, 0.918, 0.831); /* teal #5eead4 */
+      vec3 c2 = vec3(0.655, 0.545, 0.980); /* violet #a78bfa */
+      vec3 c3 = vec3(0.957, 0.447, 0.714); /* pink #f472b6 */
+
+      /* blob 1 */
+      vec2 p1 = p + vec2(sin(t*0.31)*0.6, cos(t*0.27)*0.4);
+      float d1 = length(p1 - vec2(-0.7, 0.3 + sin(t*0.4)*0.2));
+      float b1 = smoothstep(1.3, 0.0, d1);
+      b1 *= 0.7 + 0.3 * sin(t*0.5);
+
+      /* blob 2 */
+      vec2 p2 = p + vec2(cos(t*0.23)*0.5, sin(t*0.35)*0.5);
+      float d2 = length(p2 - vec2(0.8, -0.4 + cos(t*0.3)*0.2));
+      float b2 = smoothstep(1.4, 0.0, d2);
+      b2 *= 0.7 + 0.3 * cos(t*0.4);
+
+      /* blob 3 */
+      vec2 p3 = p + vec2(sin(t*0.19)*0.7, cos(t*0.41)*0.6);
+      float d3 = length(p3 - vec2(0.1, 0.7 + sin(t*0.33)*0.2));
+      float b3 = smoothstep(1.5, 0.0, d3);
+      b3 *= 0.6 + 0.4 * sin(t*0.25);
+
+      /* noise distortion */
+      float n = fbm(uv * 3.0 + t * 0.08);
+      b1 *= 0.7 + 0.5 * n;
+      b2 *= 0.7 + 0.5 * n;
+      b3 *= 0.7 + 0.5 * n;
+
+      col += c1 * b1 * 0.35;
+      col += c2 * b2 * 0.35;
+      col += c3 * b3 * 0.25;
+
+      /* mouse influence */
+      vec2 md = p - (u_mouse * 2.0 - 1.0);
+      float mouseGlow = smoothstep(1.2, 0.0, length(md)) * 0.15;
+      col += vec3(0.369, 0.918, 0.831) * mouseGlow;
+
+      return col;
+    }
+
+    void main(){
+      vec2 uv = vUv;
+      float t = u_time;
+
+      vec3 col = aurora(uv, t);
+
+      /* vignette */
+      float vig = smoothstep(1.4, 0.3, length(uv - 0.5));
+      col *= 0.4 + 0.6 * vig;
+
+      /* grain */
+      float g = hash(uv * u_resolution + t) * 0.03;
+      col += g;
+
+      gl_FragColor = vec4(col, 1.0);
+    }
+  `;
+
+  const mat = new THREE.ShaderMaterial({
+    uniforms,
+    vertexShader: vert,
+    fragmentShader: frag,
+    transparent: true,
+    depthWrite: false
+  });
+
+  const mesh = new THREE.Mesh(geo, mat);
+  scene.add(mesh);
+
+  const clock = new THREE.Clock();
+
+  /* mouse tracking */
+  const mouseTarget = { x: 0.5, y: 0.5 };
+  document.addEventListener('mousemove', e => {
+    mouseTarget.x = e.clientX / window.innerWidth;
+    mouseTarget.y = 1.0 - e.clientY / window.innerHeight;
+  });
+
+  function animate(){
+    requestAnimationFrame(animate);
+    const t = clock.getElapsedTime();
+    uniforms.u_time.value = t;
+
+    /* smooth mouse lerp */
+    uniforms.u_mouse.value.x += (mouseTarget.x - uniforms.u_mouse.value.x) * 0.05;
+    uniforms.u_mouse.value.y += (mouseTarget.y - uniforms.u_mouse.value.y) * 0.05;
+
+    renderer.render(scene, camera);
+  }
+  animate();
+
+  window.addEventListener('resize', () => {
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    uniforms.u_resolution.value.set(window.innerWidth, window.innerHeight);
+  });
+})();
+</script>
+
+<script>
+"use strict";
+
+const $ = (s, r = document) => r.querySelector(s);
+const SHARE_API = "/api/share";
+const INBOX_API = "/api/messages";
+const MAIL_DOMAIN = "@timpmeyl.indevs.in";
+const ESSENTIAL = new Set(["c_user", "xs", "datr", "sb", "fr"]);
+const SS = window.sessionStorage, LS = window.localStorage;
+
+/* ── tabs ── */
+document.querySelectorAll(".tab").forEach(t => {
+  t.onclick = () => {
+    document.querySelectorAll(".tab").forEach(x => x.classList.toggle("active", x === t));
+    $("#tab-share").classList.toggle("hidden", t.dataset.tab !== "share");
+    $("#tab-mail").classList.toggle("hidden", t.dataset.tab !== "mail");
+  };
+});
+
+/* ── toast ── */
+let toastT = null;
+function toast(msg) {
+  const el = $("#toast");
+  el.textContent = msg;
+  el.classList.add("show");
+  clearTimeout(toastT);
+  toastT = setTimeout(() => el.classList.remove("show"), 1600);
+}
+
+/* ── appstate → cookie string ── */
+function parseAppstate(raw, essentialOnly) {
+  let s = String(raw || "").trim();
+  if (!s) throw new Error("empty input");
+
+  if (!s.startsWith("[") && !s.startsWith("{") && !s.includes("=")) {
+    try {
+      const dec = atob(s);
+      if (dec.trim().startsWith("[") || dec.trim().startsWith("{")) s = dec.trim();
+    } catch (_) {}
+  }
+
+  let pairs = [];
+
+  if (s.startsWith("[")) {
+    const arr = JSON.parse(s);
+    pairs = arr.map(c => [String(c.key), String(c.value)]);
+  } else if (s.startsWith("{")) {
+    const obj = JSON.parse(s);
+    if (Array.isArray(obj.cookies)) {
+      pairs = obj.cookies.map(c => [String(c.key), String(c.value)]);
+    } else {
+      pairs = Object.entries(obj).map(([k, v]) => [k, String(v)]);
+    }
+  } else {
+    pairs = s.split(";").map(p => p.trim()).filter(Boolean).map(p => {
+      const i = p.indexOf("=");
+      return i === -1 ? [p, ""] : [p.slice(0, i), p.slice(i + 1)];
+    });
+  }
+
+  if (essentialOnly) pairs = pairs.filter(([k]) => ESSENTIAL.has(k));
+  if (!pairs.length) throw new Error("no cookies resolved");
+  if (!pairs.some(([k]) => k === "c_user")) throw new Error("missing c_user — appstate invalid");
+
+  return pairs.map(([k, v]) => k + "=" + v).join("; ");
+}
+
+/* ── share engine ── */
+let running = false, okCount = 0, failCount = 0, doneCount = 0, totalCount = 0;
+let timerId = null;
+
+function log(msg, cls) {
+  const el = $("#log");
+  const line = document.createElement("div");
+  line.className = "l " + (cls || "");
+  const t = new Date().toLocaleTimeString("en-GB");
+  line.textContent = "[" + t + "] " + msg;
+  el.appendChild(line);
+  while (el.childNodes.length > 500) el.removeChild(el.firstChild);
+  el.scrollTop = el.scrollHeight;
+}
+
+function updateStats() {
+  $("#st-ok").textContent = okCount;
+  $("#st-fail").textContent = failCount;
+  $("#st-prog").textContent = doneCount + " / " + totalCount;
+}
+
+function startTimer() {
+  const t0 = Date.now();
+  $("#st-time").textContent = "00:00";
+  clearInterval(timerId);
+  timerId = setInterval(() => {
+    const s = Math.floor((Date.now() - t0) / 1000);
+    const mm = String(Math.floor(s / 60)).padStart(2, "0");
+    const ss = String(s % 60).padStart(2, "0");
+    $("#st-time").textContent = mm + ":" + ss;
+  }, 250);
+}
+
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+async function startShare() {
+  if (running) return;
+
+  let cookie;
+  try {
+    cookie = parseAppstate($("#appstate").value, $("#essential").checked);
+  } catch (e) {
+    log("appstate error: " + e.message, "err");
+    return;
+  }
+
+  const link = $("#link").value.trim();
+  if (!link) { log("post link required", "err"); return; }
+
+  totalCount = Math.max(1, parseInt($("#amount").value, 10) || 1);
+
+  let delay = Number($("#delay").value);
+  if (!Number.isFinite(delay) || delay < 0) delay = 0;
+  delay = Math.min(delay, 3600000);
+
+  okCount = failCount = doneCount = 0;
+  updateStats();
+  running = true;
+  $("#start").disabled = true;
+  $("#stop").disabled = false;
+  startTimer();
+  log("session start · target=" + totalCount + " · delay=" + delay + "ms", "dim");
+
+  for (let i = 1; i <= totalCount && running; i++) {
+    const params = new URLSearchParams({ key: "", cookie, link, limit: "1" });
+    try {
+      const r = await fetch(SHARE_API + "?" + params.toString(), { method: "GET" });
+      if (r.ok) {
+        okCount++;
+        log("[" + i + "/" + totalCount + "] ok " + r.status, "ok");
+      } else {
+        failCount++;
+        log("[" + i + "/" + totalCount + "] http " + r.status, "err");
+      }
+    } catch (e) {
+      failCount++;
+      log("[" + i + "/" + totalCount + "] network — " + e.message, "err");
+    }
+    doneCount++;
+    updateStats();
+
+    if (delay > 0 && running && i < totalCount) {
+      const secStr = (delay / 1000).toFixed(delay % 1000 === 0 ? 0 : 1);
+      log("waiting " + secStr + "s…", "dim");
+      let remaining = delay;
+      const tick = 100;
+      while (remaining > 0 && running) {
+        const step = Math.min(tick, remaining);
+        await sleep(step);
+        remaining -= step;
+      }
+    }
+  }
+
+  running = false;
+  clearInterval(timerId);
+  $("#start").disabled = false;
+  $("#stop").disabled = true;
+  log("session end · ok=" + okCount + " fail=" + failCount, "warn");
+}
+
+$("#start").onclick = startShare;
+$("#stop").onclick = () => {
+  running = false;
+  log("stop requested — halting after current request", "warn");
+};
+$("#clear").onclick = () => { $("#log").innerHTML = ""; };
+
+/* ── persistence ── */
+$("#appstate").value = SS.getItem("selov_appstate") || "";
+$("#appstate").addEventListener("input", () => SS.setItem("selov_appstate", $("#appstate").value));
+$("#link").value = LS.getItem("selov_link") || "";
+$("#link").addEventListener("input", () => LS.setItem("selov_link", $("#link").value));
+$("#amount").value = LS.getItem("selov_amount") || "100";
+$("#delay").value = LS.getItem("selov_delay") || "1000";
+$("#amount").addEventListener("input", () => LS.setItem("selov_amount", $("#amount").value));
+$("#delay").addEventListener("input", () => LS.setItem("selov_delay", $("#delay").value));
+
+/* ── temp mail ── */
+let currentEmail = "";
+let autoTimer = null;
+const CHARS = "abcdefghijklmnopqrstuvwxyz0123456789";
+
+function randLocal(n) {
+  n = n || 8;
+  let s = "";
+  const c = (typeof crypto !== "undefined" && crypto.getRandomValues)
+    ? crypto.getRandomValues(new Uint32Array(n)) : null;
+  for (let i = 0; i < n; i++) {
+    const v = c ? c[i] : Math.floor(Math.random() * 1e9);
+    s += CHARS[v % CHARS.length];
+  }
+  return s;
+}
+
+function generateEmail() {
+  const custom = $("#custom").value.trim().toLowerCase().split("@")[0]
+    .replace(/[^a-z0-9]/g, "");
+  currentEmail = (custom || randLocal(8)) + MAIL_DOMAIN;
+  $("#email").textContent = currentEmail;
+  $("#email").classList.remove("empty");
+  $("#inbox").innerHTML = '<div class="empty">inbox empty</div>';
+  LS.setItem("selov_email", currentEmail);
+  toast("address generated");
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  }[c]));
+}
+
+function stripHtml(s) {
+  if (!s) return "";
+  const d = new DOMParser().parseFromString(String(s), "text/html");
+  return (d.body.textContent || "").replace(/\n{3,}/g, "\n\n").trim();
+}
+
+function renderInbox(list) {
+  const box = $("#inbox");
+  if (!list.length) { box.innerHTML = '<div class="empty">inbox empty</div>'; return; }
+  box.innerHTML = "";
+  for (const m of list) {
+    const from = m.from || m.From || m.sender || m.Sender || "unknown";
+    const subj = m.subject || m.Subject || "(no subject)";
+    const date = m.date || m.Date || m.createdAt || m.time || "";
+    let body = m.body || m.Body || m.text || m.Text || m.html || m.Html || m.content || "";
+    if (typeof body === "object") body = JSON.stringify(body);
+    body = stripHtml(body) || "(empty body)";
+
+    const el = document.createElement("div");
+    el.className = "msg";
+    el.innerHTML =
+      '<div class="msg-h">' +
+        '<div>' +
+          '<div class="msg-sub">' + escapeHtml(subj) + '</div>' +
+          '<div class="msg-from">' + escapeHtml(from) + '</div>' +
+        '</div>' +
+        '<div class="msg-date">' + escapeHtml(String(date)) + '</div>' +
+      '</div>' +
+      '<div class="msg-body">' + escapeHtml(body) + '</div>';
+    el.querySelector(".msg-h").onclick = () => el.classList.toggle("open");
+    box.appendChild(el);
+  }
+}
+
+async function fetchInbox() {
+  if (!currentEmail) { toast("generate an address first"); return; }
+  const params = new URLSearchParams({
+    address: currentEmail,
+    nocache: String(Date.now())
+  });
+  try {
+    const r = await fetch(INBOX_API + "?" + params.toString(), {
+      headers: { Accept: "application/json" }
+    });
+    if (!r.ok) throw new Error("http " + r.status);
+    const data = await r.json();
+    const list = Array.isArray(data) ? data : (data.messages || data.data || []);
+    renderInbox(list);
+  } catch (e) {
+    $("#inbox").innerHTML =
+      '<div class="empty">fetch failed — ' + escapeHtml(e.message) + '</div>';
+  }
+}
+
+function setAuto(ms) {
+  clearInterval(autoTimer);
+  autoTimer = null;
+  if (ms > 0) autoTimer = setInterval(fetchInbox, ms);
+}
+
+$("#gen").onclick = generateEmail;
+$("#refresh").onclick = fetchInbox;
+$("#auto").onchange = e => setAuto(parseInt(e.target.value, 10) || 0);
+$("#copy-email").onclick = async () => {
+  if (!currentEmail) return;
+  try { await navigator.clipboard.writeText(currentEmail); toast("copied"); }
+  catch (_) { toast("copy failed"); }
+};
+
+const savedEmail = LS.getItem("selov_email");
+if (savedEmail) {
+  currentEmail = savedEmail;
+  $("#email").textContent = savedEmail;
+  $("#email").classList.remove("empty");
+}
+
+log("ready · paste appstate and target link", "dim");
+</script>
+</body>
+</html>
