@@ -14,10 +14,5 @@
   "engines": {
     "node": ">=18"
   },
-  "keywords": [
-    "share-boost",
-    "temp-mail",
-    "selov"
-  ],
   "license": "MIT"
 }
